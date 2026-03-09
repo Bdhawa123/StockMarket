@@ -1,7 +1,7 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import * as d3 from "d3";
 
-const Chart = ({ ticker, data }) => {
+const Chart = ({ data }) => {
   return (
     <div style={{ padding: "20px" }}>
       <h2 style={{ textAlign: "center" }}>{data.ticker}</h2>
@@ -15,11 +15,12 @@ const LineChart = ({ data }) => {
   const gx = useRef();
   const gy = useRef();
   const pathRef = useRef();
+  const [hoverData, setHoverData] = useState(null);
 
   const width = 928;
-  const height = 900;
+  const height = 600;
   const marginTop = 20;
-  const marginRight = 30;
+  const marginRight = 45;
   const marginBottom = 30;
   const marginLeft = 40;
 
@@ -45,12 +46,13 @@ const LineChart = ({ data }) => {
   const line = d3
     .line()
     .x((d) => x(d.date))
-    .y((d) => y(d.price));
+    .y((d) => y(d.price))
+    .curve(d3.curveCardinal);
 
   // 4. Update Axes using useEffect
   useEffect(() => {
-    d3.select(gx.current).call(d3.axisBottom(x));
-    d3.select(gy.current).call(d3.axisLeft(y));
+    // d3.select(gx.current).call(d3.axisBottom(x));
+    // d3.select(gy.current).call(d3.axisLeft(y));
 
     d3.select(gx.current).call(
       d3
@@ -77,8 +79,23 @@ const LineChart = ({ data }) => {
       });
   }, [data, x, y]);
 
+  const onMouseMove = (event) => {
+    const [mouseX] = d3.pointer(event);
+    const x0 = x.invert(mouseX);
+
+    // Find the nearest year
+    const bisect = d3.bisector((d) => d.date).center;
+    const index = bisect(formattedData, x0);
+    setHoverData(formattedData[index]);
+  };
+
   return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+    <svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      style={{ maxWidth: "100%", height: "auto" }}
+    >
       {/* X-Axis */}
       <g ref={gx} transform={`translate(0,${height - marginBottom})`} />
 
@@ -91,6 +108,48 @@ const LineChart = ({ data }) => {
         stroke="steelblue"
         strokeWidth="1.5"
         d={line(formattedData)}
+      />
+
+      {hoverData && (
+        <g>
+          {/* Vertical Guideline */}
+          <line
+            x1={x(hoverData.date)}
+            x2={x(hoverData.date)}
+            y1={marginTop}
+            y2={height - marginBottom}
+            stroke="#ccc"
+            strokeDasharray="4"
+          />
+          {/* Intersection Point */}
+          <circle
+            cx={x(hoverData.date)}
+            cy={y(hoverData.price)}
+            r={5}
+            fill="steelblue"
+            stroke="white"
+            strokeWidth={2}
+          />
+          {/* Y-Axis Value Label */}
+          <text
+            x={x(hoverData.date) + 10}
+            y={y(hoverData.price) - 10}
+            fontSize="12"
+            fontWeight="bold"
+            fill="#333"
+          >
+            ${hoverData.price.toLocaleString()}
+          </text>
+        </g>
+      )}
+
+      <rect
+        width={width}
+        height={height}
+        fill="transparent"
+        style={{ pointerEvents: "all" }}
+        onMouseMove={onMouseMove}
+        onMouseLeave={() => setHoverData(null)}
       />
     </svg>
   );
