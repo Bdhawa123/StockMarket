@@ -1,4 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
+import LineGraph from "./LineGraph";
+import InteractionLayer from "./InteractionLayer";
 import * as d3 from "d3";
 
 const Chart = ({ data }) => {
@@ -31,9 +33,27 @@ const Chart = ({ data }) => {
 const LineChart = ({ data, msft }) => {
   const gx = useRef();
   const gy = useRef();
-  let formattedmsft = [];
+  const combinedDataSet = [data, msft];
 
-  const [hoverData, setHoverData] = useState(null);
+  const combinedFormattedDataSet = combinedDataSet
+    .filter((d) => d && d.data) // Filter out the null 'msft' if it's still loading
+    .flatMap((stock) =>
+      Object.entries(stock.data).map(([year, price]) => ({
+        date: new Date(year, 0, 1),
+        price: +price,
+      })),
+    );
+
+  const combinedArraySet = combinedDataSet
+    .filter((d) => d && d.data)
+    .map((data) =>
+      Object.entries(data.data).map(([year, price]) => ({
+        date: new Date(year, 0, 1), // Sets date to Jan 1st of that year
+        price: price,
+      })),
+    );
+
+  // const [hoverData, setHoverData] = useState(null);
 
   const width = 928;
   const height = 600;
@@ -41,29 +61,20 @@ const LineChart = ({ data, msft }) => {
   const marginRight = 45;
   const marginBottom = 30;
   const marginLeft = 40;
+  const margin = {
+    marginTop: 20,
+    marginRight: 45,
+    marginBottom: 30,
+    marginLeft: 40,
+  };
 
-  // 1. Transform the Object into a D3-friendly Array
-  // Transform the Object into a D3-friendly Array
-  const formattedData = Object.entries(data.data).map(([year, price]) => ({
-    date: new Date(year, 0, 1), // Sets date to Jan 1st of that year
-    price: price,
-  }));
-
-  if (msft) {
-    formattedmsft = Object.entries(msft.data).map(([year, price]) => ({
-      date: new Date(year, 0, 1), // Sets date to Jan 1st of that year
-      price: price,
-    }));
-  }
-
-  // 2. Scales
   const x = d3.scaleUtc(
-    d3.extent([...formattedData, ...formattedmsft], (d) => d.date),
+    d3.extent(combinedFormattedDataSet, (d) => d.date),
     [marginLeft, width - marginRight],
   );
 
   const y = d3.scaleLinear(
-    [0, d3.max([...formattedData, ...formattedmsft], (d) => d.price)],
+    [0, d3.max(combinedFormattedDataSet, (d) => d.price)],
     [height - marginBottom, marginTop],
   );
 
@@ -107,25 +118,9 @@ const LineChart = ({ data, msft }) => {
       });
   }, [data, x, y]);
 
-  const onMouseMove = (event) => {
-    const [mouseX] = d3.pointer(event);
-    const x0 = x.invert(mouseX); // The date under the mouse
+  const randomColor = () =>
+    `rgb(${Math.floor(Math.random() * 256)},${Math.floor(Math.random() * 256)},${Math.floor(Math.random() * 256)})`;
 
-    const bisect = d3.bisector((d) => d.date).center;
-
-    const index1 = bisect(formattedData, x0);
-    const point1 = formattedData[index1];
-
-    const index2 = bisect(formattedmsft, x0);
-    const point2 = formattedmsft[index2];
-
-    // Update state with both (or null if they don't exist at that date)
-    setHoverData({
-      point1: point1 || null,
-      point2: point2 || null,
-      xPos: mouseX, // Use the actual mouse X for the vertical line
-    });
-  };
   return (
     <svg
       width={width}
@@ -135,89 +130,27 @@ const LineChart = ({ data, msft }) => {
     >
       {/* X-Axis */}
       <g ref={gx} transform={`translate(0,${height - marginBottom})`} />
-
       {/* Y-Axis */}
       <g ref={gy} transform={`translate(${marginLeft},0)`} />
-
       {/* The Actual Line */}
-      <path
-        fill="none"
-        stroke="steelblue"
-        strokeWidth="1.5"
-        d={line(formattedData)}
-      />
 
-      <path
-        fill="none"
-        stroke="red"
-        strokeWidth="1.5"
-        d={line(formattedmsft)}
-      />
+      {combinedArraySet.map((dataSet, index) => (
+        <LineGraph
+          key={index}
+          formattedData={dataSet}
+          line={line}
+          lineColor={randomColor()}
+        />
+      ))}
 
-      {hoverData && (
-        <g pointerEvents="none">
-          <line
-            x1={hoverData.xPos}
-            x2={hoverData.xPos}
-            y1={marginTop}
-            y2={height - marginBottom}
-            stroke="#ccc"
-            strokeDasharray="4"
-          />
-
-          {/* Only show circle if point1 exists */}
-          {hoverData.point1 && (
-            <circle
-              cx={hoverData.xPos}
-              cy={y(hoverData.point1.price)}
-              r={5}
-              fill="steelblue"
-            />
-          )}
-
-          {/* Only show circle if point2 exists */}
-          {hoverData.point2 && (
-            <circle
-              cx={hoverData.xPos}
-              cy={y(hoverData.point2.price)}
-              r={5}
-              fill="red"
-            />
-          )}
-
-          <g transform={`translate(${hoverData.xPos + 15}, ${marginTop})`}>
-            <rect width="130" height="65" fill="white" stroke="#ccc" rx="4" />
-
-            <text x="10" y="20" fontSize="12" fontWeight="bold">
-              {(hoverData.point1 || hoverData.point2).date.getFullYear()}
-            </text>
-
-            {/* Safe access for Main Ticker */}
-            <text x="10" y="40" fontSize="11" fill="steelblue">
-              {data.ticker}:{" "}
-              {hoverData.point1
-                ? `$${hoverData.point1.price.toFixed(2)}`
-                : "N/A"}
-            </text>
-
-            {/* Safe access for MSFT */}
-            <text x="10" y="55" fontSize="11" fill="red">
-              MSFT:{" "}
-              {hoverData.point2
-                ? `$${hoverData.point2.price.toFixed(2)}`
-                : "N/A"}
-            </text>
-          </g>
-        </g>
-      )}
-
-      <rect
+      <InteractionLayer
+        completeDataSet={combinedArraySet}
+        x={x}
+        y={y}
         width={width}
         height={height}
-        fill="transparent"
-        style={{ pointerEvents: "all" }}
-        onMouseMove={onMouseMove}
-        onMouseLeave={() => setHoverData(null)}
+        margin={margin}
+        ticker={data.ticker}
       />
     </svg>
   );
