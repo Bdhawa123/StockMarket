@@ -1,17 +1,21 @@
 import React, { useState } from "react";
 import * as d3 from "d3";
 
-const InteractionLayer = ({ completeDataSet, x, y, width, height, margin }) => {
+const InteractionLayer = ({
+  completeDataSet,
+  x,
+  y,
+  width,
+  height,
+  margin,
+  ticker,
+}) => {
   const [hover, setHover] = useState(null);
 
   const onMouseMove = (event) => {
     const [mouseX] = d3.pointer(event);
     const xDate = x.invert(mouseX);
     const bisect = d3.bisector((d) => d.date).center;
-
-    // Find closest points in both datasets
-    // const p1 = data1[bisect(data1, xDate)];
-    // const p2 = data2 && data2.length > 0 ? data2[bisect(data2, xDate)] : null;
 
     const activePoints = completeDataSet.map((dataSet, index) => {
       const i = bisect(dataSet, xDate);
@@ -62,17 +66,26 @@ const InteractionLayer = ({ completeDataSet, x, y, width, height, margin }) => {
           >
             <rect
               width="130"
-              height="65"
+              height={ticker.length * 25 + 20}
               fill="white"
               stroke="#ccc"
               rx="4"
               fillOpacity="0.9"
+              style={styles.tooltipStyle}
             />
-            {hover.points.map((p, i) => (
-              <text key={i} x="10" y={40 + i * 15} fontSize="11" fill={p.color}>
-                Stock {i + 1}: ${p.data.price.toFixed(2)}
-              </text>
-            ))}
+            {hover.points.map((p, i) => {
+              return (
+                <text
+                  key={i}
+                  x="10"
+                  y={40 + i * 15}
+                  fontSize="11"
+                  fill={p.color}
+                >
+                  ${ticker[i]}: ${p.data.price.toFixed(2)}
+                </text>
+              );
+            })}
           </g>
         </g>
       )}
@@ -90,6 +103,12 @@ const InteractionLayer = ({ completeDataSet, x, y, width, height, margin }) => {
       />
     </g>
   );
+};
+
+const styles = {
+  tooltipStyle: {
+    display: "inline-flex",
+  },
 };
 
 export default InteractionLayer;

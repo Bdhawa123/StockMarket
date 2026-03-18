@@ -4,39 +4,23 @@ import InteractionLayer from "./InteractionLayer";
 import * as d3 from "d3";
 
 const Chart = ({ data }) => {
-  const [msft, setMSFTdata] = useState(null);
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const url = `http://127.0.0.1:5000/api/stock?ticker=MSFT`;
-        const response = await fetch(url);
-        const actualData = await response.json();
-        console.log(actualData.data);
-
-        setMSFTdata(actualData);
-      } catch (e) {
-        console.log(e.message);
-      }
-    };
-    fetchData();
-  }, []);
+  // console.log(data);
 
   return (
     <div style={{ padding: "20px" }}>
       <h2 style={{ textAlign: "center" }}>{data.ticker}</h2>
-      {/* Pass the data object to the actual drawing component */}
-      <LineChart data={data} msft={msft} />
+      <LineChart data={data} />
     </div>
   );
 };
 
-const LineChart = ({ data, msft }) => {
+const LineChart = ({ data }) => {
   const gx = useRef();
   const gy = useRef();
-  const combinedDataSet = [data, msft];
+  const combinedDataSet = data;
 
   const combinedFormattedDataSet = combinedDataSet
-    .filter((d) => d && d.data) // Filter out the null 'msft' if it's still loading
+    .filter((d) => d && d.data)
     .flatMap((stock) =>
       Object.entries(stock.data).map(([year, price]) => ({
         date: new Date(year, 0, 1),
@@ -48,12 +32,12 @@ const LineChart = ({ data, msft }) => {
     .filter((d) => d && d.data)
     .map((data) =>
       Object.entries(data.data).map(([year, price]) => ({
-        date: new Date(year, 0, 1), // Sets date to Jan 1st of that year
+        date: new Date(year, 0, 1),
         price: price,
       })),
     );
 
-  // const [hoverData, setHoverData] = useState(null);
+  console.log(combinedDataSet[0].ticker);
 
   const width = 928;
   const height = 600;
@@ -150,7 +134,7 @@ const LineChart = ({ data, msft }) => {
         width={width}
         height={height}
         margin={margin}
-        ticker={data.ticker}
+        ticker={data.map((x) => x.ticker)}
       />
     </svg>
   );
