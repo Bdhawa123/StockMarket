@@ -1,11 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IoIosClose } from "react-icons/io";
 import Chart from "./Chart";
 import { Button, TextField } from "@mui/material";
 
-const LoadChart = () => {
+const LoadUSCharts = ({ marketLink, title }) => {
   const [input, setInput] = useState("");
   const [data, setData] = useState([]);
+
+  useEffect(() => {
+    setData([]);
+  }, []);
 
   const removeSet = (ticker) => {
     console.log(ticker);
@@ -14,7 +18,8 @@ const LoadChart = () => {
   };
   const fetchTickerData = async (ticker) => {
     try {
-      const url = `http://127.0.0.1:5000/api/stock?ticker=${ticker}`;
+      const url = marketLink + ticker;
+
       const response = await fetch(url);
 
       if (response.status === 200) {
@@ -29,6 +34,7 @@ const LoadChart = () => {
 
   return (
     <div>
+      <h1 style={styles.heading}>{title}</h1>
       <TextField
         label={input === "" ? "TICKER" : ""}
         variant="standard"
@@ -90,6 +96,12 @@ const styles = {
     backgroundColor: "#c9c2c1",
     color: "black",
   },
+  heading: {
+    display: "grid",
+    placeItems: "center",
+    margin: "2%",
+    width: "75%",
+  },
 };
 
-export default LoadChart;
+export default LoadUSCharts;

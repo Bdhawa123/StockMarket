@@ -67,13 +67,6 @@ const LineChart = ({ data }) => {
     .y((d) => y(d.price))
     .curve(d3.curveCardinal);
 
-  const line2 = d3
-    .line()
-    .x((d) => x(d.date))
-    .y((d) => y(d.price))
-    .curve(d3.curveCardinal);
-
-  // 4. Update Axes using useEffect
   useEffect(() => {
     d3.select(gx.current).call(
       d3

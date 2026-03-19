@@ -4,7 +4,6 @@ import * as d3 from "d3";
 const LineGraph = ({ formattedData, line, lineColor }) => {
   return (
     <g>
-      {/* The actual SVG paths passed from parent */}
       <path
         d={line(formattedData)}
         fill="none"

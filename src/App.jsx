@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { Routes, Route } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import LoadChart from "./component/LoadCharts";
 import SideNav from "./component/SideNav";
 import { CssBaseline } from "@mui/material";
+import LoadCharts from "./component/LoadCharts";
+
 // import "./App.css";
 
 const theme = createTheme({
@@ -18,8 +19,26 @@ function AppMain() {
         <SideNav />
       </div>
       <div>
-        <h1 style={styles.heading}>Stock Market</h1>
-        <LoadChart />
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <LoadCharts
+                marketLink="http://127.0.0.1:5000/api/stock/US?ticker="
+                title="US Markets"
+              />
+            }
+          />
+          <Route
+            path="/AUS"
+            element={
+              <LoadCharts
+                marketLink="http://127.0.0.1:5000/api/stock/AUS?ticker="
+                title="AUS Markets"
+              />
+            }
+          />
+        </Routes>
       </div>
     </div>
   );
@@ -33,23 +52,12 @@ const styles = {
     gap: "20px",
   },
 
-  heading: {
-    display: "grid",
-    placeItems: "center",
-    margin: "2%",
-    width: "75%",
-  },
   column1: {
     backgroundColor: " #b3a4a462",
-    position: "relative",
     height: "calc(75vh)",
     position: "sticky",
     top: "20px",
     marginTop: "5%",
-
-    // gridColumnStart: "1",
-    // gridRowStart: "1/span 8",
-    // gridRowEnd: "last-line",
   },
 };
 
