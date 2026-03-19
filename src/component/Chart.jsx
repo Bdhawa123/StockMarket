@@ -4,8 +4,6 @@ import InteractionLayer from "./InteractionLayer";
 import * as d3 from "d3";
 
 const Chart = ({ data }) => {
-  // console.log(data);
-
   return (
     <div style={{ padding: "20px" }}>
       <h2 style={{ textAlign: "center" }}>{data.ticker}</h2>

@@ -17,7 +17,7 @@ const InteractionLayer = ({
     const xDate = x.invert(mouseX);
     const bisect = d3.bisector((d) => d.date).center;
 
-    const activePoints = completeDataSet.map((dataSet, index) => {
+    const activePoints = completeDataSet.map((dataSet) => {
       const i = bisect(dataSet, xDate);
       return {
         data: dataSet[i],

@@ -1,6 +1,7 @@
-import React, { act, useEffect, useState } from "react";
+import React, { useState } from "react";
 import { IoIosClose } from "react-icons/io";
 import Chart from "./Chart";
+import { Button, TextField } from "@mui/material";
 
 const LoadChart = () => {
   const [input, setInput] = useState("");
@@ -19,7 +20,6 @@ const LoadChart = () => {
       if (response.status === 200) {
         const actualData = await response.json();
         let bool = data.some((x) => x.ticker === actualData.ticker);
-        // const bool = data.filter((x)=>x.ticker)
         if (!bool) setData([...data, actualData]);
       }
     } catch (e) {
@@ -29,20 +29,30 @@ const LoadChart = () => {
 
   return (
     <div>
-      <input value={input} onChange={(e) => setInput(e.target.value)} />
-      <button
+      <TextField
+        label={input === "" ? "TICKER" : ""}
+        variant="standard"
+        onChange={(e) => setInput(e.target.value)}
+        sx={styles.inputStyle}
+      />
+      <Button
+        variant="contained"
+        size="small"
         onClick={() => {
           fetchTickerData(input);
         }}
+        sx={styles.button}
       >
         Add
-      </button>
+      </Button>
       <div>
         {data.map((d) => {
           return (
-            <div style={styles.backgroundStyling}>
+            <div style={styles.objectStyle}>
               {d.ticker}
               <IoIosClose
+                size={25}
+                style={styles.closeIcon}
                 onClick={() => {
                   removeSet(d.ticker);
                 }}
@@ -59,12 +69,26 @@ const LoadChart = () => {
 };
 
 const styles = {
-  backgroundStyling: {
+  objectStyle: {
     background: "#c9c2c1",
     borderRadius: "3px",
     display: "inline-flex",
     padding: "2px 6px",
     margin: "1px",
+  },
+
+  closeIcon: {
+    padding: "1px",
+    cursor: "pointer",
+  },
+
+  inputStyle: {
+    marginBottom: "1%",
+  },
+
+  button: {
+    backgroundColor: "#c9c2c1",
+    color: "black",
   },
 };
 
