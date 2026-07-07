@@ -20,6 +20,24 @@ const SideNav = () => {
         AUS Charts
       </Link>
       <Divider style={styles.divider} />
+      <Link
+        component={RouterLink}
+        underline="none"
+        sx={styles.SideNav}
+        to="/IN"
+      >
+        INDIA Charts
+      </Link>
+      <Divider style={styles.divider} />
+      <Link
+        component={RouterLink}
+        underline="none"
+        sx={styles.SideNav}
+        to="/HK"
+      >
+        Hong Kong Charts
+      </Link>
+      <Divider style={styles.divider} />
     </div>
   ) : null;
 };

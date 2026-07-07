@@ -3,6 +3,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import SideNav from "./component/SideNav";
 import { CssBaseline } from "@mui/material";
 import LoadCharts from "./component/LoadCharts";
+import { Provider as StockTickerProvider } from "./context/StockReducer";
 
 // import "./App.css";
 
@@ -38,6 +39,24 @@ function AppMain() {
               />
             }
           />
+          <Route
+            path="/IN"
+            element={
+              <LoadCharts
+                marketLink="http://127.0.0.1:5000/api/stock/IN?ticker="
+                title="IN Markets"
+              />
+            }
+          />
+          <Route
+            path="/HK"
+            element={
+              <LoadCharts
+                marketLink="http://127.0.0.1:5000/api/stock/HK?ticker="
+                title="HK Markets"
+              />
+            }
+          />
         </Routes>
       </div>
     </div>
@@ -65,7 +84,9 @@ const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AppMain />
+      <StockTickerProvider>
+        <AppMain />
+      </StockTickerProvider>
     </ThemeProvider>
   );
 };
